@@ -150,7 +150,7 @@ namespace gpu {
 
         double xx0 = 0.0;
         for (int x = 0; x < TEX_WIDTH; ++x) {
-            const double xx1 = glm::pow(static_cast<double>(x), xAxisScalingFactor);
+            const double xx1 = glm::pow(static_cast<double>(x + 1), xAxisScalingFactor);
 
             if (x % 2 == 0) {
                 horizontalRectangles[x / 2].x = xx0;
@@ -294,7 +294,7 @@ namespace gpu {
     }
 
     uint32_t AtmosphereEclipsePhotonMapper::createShadowMap() {
-        std::vector<Photon> photons = generatePhotons(1000'000);
+        std::vector<Photon> photons = generatePhotons(100'000);
 
         uint32_t ssboPhotons;
         glGenBuffers(1, &ssboPhotons);
