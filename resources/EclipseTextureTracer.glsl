@@ -3,22 +3,10 @@
 #extension GL_ARB_compute_shader: enable
 #extension GL_ARB_shader_storage_buffer_object: enable
 #extension GL_ARB_compute_variable_group_size: enable
-/*
-uint counter = 0;
-const uint DEBUG_BUFFER_SIZE = 16;
-layout(std430, binding = 9) buffer Debug {
-  float floats[DEBUG_BUFFER_SIZE];
-  vec2 vec2s[DEBUG_BUFFER_SIZE];
 
-  uint uints[DEBUG_BUFFER_SIZE];
-  uvec2 uvec2s[DEBUG_BUFFER_SIZE];
-};*/
-
-// TODO make configurable
 const uint TEX_WIDTH = 1024u;
 const uint TEX_HEIGHT = TEX_WIDTH;
 
-// TODO make configurable
 const uint MIN_WAVELENGTH = 380u;
 const uint MAX_WAVELENGTH = 740u;
 const uint NUM_WAVELENGTHS = MAX_WAVELENGTH - MIN_WAVELENGTH;
@@ -140,7 +128,7 @@ void main() {
   while (photonTexIndices.x < TEX_WIDTH && photonTexIndices.y < TEX_HEIGHT &&
   photonTexIndices.x >= 0        && photonTexIndices.y >= 0) {
     // need to convert to uint for atomic add operations...
-    addToPixel(uvec2(photonTexIndices), photon.wavelength, uint(photon.intensity * 100.0));
+    addToPixel(uvec2(photonTexIndices), photon.wavelength, 1u);//uint(photon.intensity * 100.0));
 
     ivec2 dir = getRayRectangleExitEdge(photon, getRectangleAt(photonTexIndices));
     photonTexIndices += dir;

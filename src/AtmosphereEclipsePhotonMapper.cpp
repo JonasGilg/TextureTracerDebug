@@ -141,11 +141,6 @@ namespace gpu {
 
         const double xAxisScalingFactor = glm::log(shadowLength) / glm::log(static_cast<double>(TEX_WIDTH));
 
-        // Each element of the vector contains information about two rectangles. x and
-        // y are the x position and width for the first rectangle and z and w are the
-        // x position and the width for the second rectangle. This is done to save
-        // memory, since uniform buffers require a padding for to vec4. So we can fit
-        // two rectangles in one element.
         std::vector<glm::vec4> horizontalRectangles = std::vector<glm::vec4>(TEX_WIDTH / 2);
 
         double xx0 = 0.0;
@@ -183,21 +178,6 @@ namespace gpu {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboPixels);
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboRectangles);
 
-        // ############################################################################################ \\
-
-        /*
-        const size_t DEBUG_BUFFER_SIZE = 16;
-        const size_t debugSize         = DEBUG_BUFFER_SIZE * (sizeof(float) + 2 *
-        sizeof(float) + sizeof(uint32_t) + 2 * sizeof(uint32_t)); uint32_t ssboDebug;
-        glGenBuffers(1, &ssboDebug);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboDebug);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, debugSize, nullptr, GL_DYNAMIC_COPY);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 9, ssboDebug);
-      */
-
-        // ############################################################################################ \\
-
-        // TODO make configurable
         const uint32_t numThreads = 32u;
         const uint32_t numBlocks = numPhotons / numThreads;
         std::cout << "numBlocks: " << numBlocks << std::endl;
@@ -242,51 +222,6 @@ namespace gpu {
             std::cout << std::endl;
         }
 
-        // ############################################################################################ \\
-
-        /*
-          glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboDebug);
-
-          std::array<float, DEBUG_BUFFER_SIZE> floats{};
-          glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(floats),
-          floats.data());
-
-          std::array<glm::vec2, DEBUG_BUFFER_SIZE> vec2s{};
-          glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(floats), sizeof(vec2s),
-          vec2s.data());
-
-          std::array<uint32_t, DEBUG_BUFFER_SIZE> uints{};
-          glGetBufferSubData(
-              GL_SHADER_STORAGE_BUFFER, sizeof(floats) + sizeof(vec2s), sizeof(uints),
-          uints.data());
-
-          std::array<glm::uvec2, DEBUG_BUFFER_SIZE> uvec2s{};
-          glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(floats) + sizeof(vec2s)
-          + sizeof(uints), sizeof(uvec2s), uvec2s.data());
-
-          for (float f : floats) {
-            printf("%.5f, ", f);
-          }
-          std::cout << std::endl;
-
-          for (glm::vec2 v : vec2s) {
-            printf("(%.5f, %.5f), ", v.x, v.y);
-          }
-          std::cout << std::endl;
-
-          for (uint32_t u : uints) {
-            std::cout << u << ", ";
-          }
-          std::cout << std::endl;
-
-          for (glm::uvec2 v : uvec2s) {
-            printf("(%u, %u), ", v.x, v.y);
-          }
-          std::cout << std::endl;
-        */
-
-        // ############################################################################################ \\
-
         glDeleteBuffers(1, &uboRectangles);
         glDeleteBuffers(1, &ssboPixels);
 
@@ -294,7 +229,7 @@ namespace gpu {
     }
 
     uint32_t AtmosphereEclipsePhotonMapper::createShadowMap() {
-        std::vector<Photon> photons = generatePhotons(100'000);
+        std::vector<Photon> photons = generatePhotons(1000'000);
 
         uint32_t ssboPhotons;
         glGenBuffers(1, &ssboPhotons);
