@@ -1,11 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//                               This file is part of CosmoScout VR //
-//      and may be used under the terms of the MIT license. See the LICENSE file
-//      for details.     //
-//                        Copyright: (c) 2019 German Aerospace Center (DLR) //
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include "AtmosphereEclipsePhotonMapper.hpp"
+#include "TextureTracer.hpp"
 #include <GL/glew.h>
 #include <algorithm>
 #include <fstream>
@@ -53,11 +46,11 @@ namespace gpu {
         return shaderCode;
     }
 
-    void AtmosphereEclipsePhotonMapper::initTextureTracer() {
+    void TextureTracer::initTextureTracer() {
         mTextureTracerProgram = glCreateProgram();
         uint32_t rayTracingComputeShader = glCreateShader(GL_COMPUTE_SHADER);
 
-        std::string code = loadShader("../resources/EclipseTextureTracer.glsl");
+        std::string code = loadShader("../resources/TextureTracer.glsl");
         const char *shader = code.c_str();
         glShaderSource(rayTracingComputeShader, 1, &shader, nullptr);
         glCompileShader(rayTracingComputeShader);
@@ -73,11 +66,10 @@ namespace gpu {
         glDeleteShader(rayTracingComputeShader);
     }
 
-    AtmosphereEclipsePhotonMapper::AtmosphereEclipsePhotonMapper()
+    TextureTracer::TextureTracer()
             : mRNG(1L), mDistributionSun(std::uniform_real_distribution<>(-SUN_RADIUS, SUN_RADIUS)),
               mDistributionWavelength(std::uniform_int_distribution<uint32_t>(380, 739)),
               mDistributionBoolean(std::bernoulli_distribution(0.5)) {
-        // During init, enable debug output
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageCallback(MessageCallback, nullptr);
 
@@ -101,7 +93,7 @@ namespace gpu {
         return glm::max(0.0, -b - glm::sqrt(discr));
     }
 
-    Photon AtmosphereEclipsePhotonMapper::emitPhoton() {
+    Photon TextureTracer::emitPhoton() {
         std::uniform_real_distribution<> distributionEarth(0.0, ATMO_HEIGHT);
         glm::dvec2 target = {0.0, RADIUS + distributionEarth(mRNG)};
 
@@ -120,7 +112,7 @@ namespace gpu {
                 mDistributionWavelength(mRNG), 1.0f};
     }
 
-    std::vector<Photon> AtmosphereEclipsePhotonMapper::generatePhotons(uint32_t count) {
+    std::vector<Photon> TextureTracer::generatePhotons(uint32_t count) {
         std::vector<Photon> photons(count);
         std::generate(photons.begin(), photons.end(), [this]() {
             return emitPhoton();
@@ -129,7 +121,7 @@ namespace gpu {
     }
 
 
-    void AtmosphereEclipsePhotonMapper::traceThroughTexture(uint32_t ssboPhotons, size_t numPhotons) {
+    void TextureTracer::traceThroughTexture(uint32_t ssboPhotons, size_t numPhotons) {
         glUseProgram(mTextureTracerProgram);
 
         glUniform1f(mTextureTracerUniforms.uRectangleHeight, RADIUS_FACTORED / TEX_HEIGHT);
@@ -189,7 +181,7 @@ namespace gpu {
             uint32_t intensityAtWavelengths[NUM_WAVELENGTHS];
         };
 
-        std::vector<Pixel> pixels = std::vector<Pixel>(TEX_WIDTH * TEX_HEIGHT);
+        std::vector<Pixel> pixels(TEX_WIDTH * TEX_HEIGHT);
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboPixels);
         glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, pixelBufferSize, pixels.data());
@@ -228,8 +220,8 @@ namespace gpu {
         glUseProgram(0);
     }
 
-    uint32_t AtmosphereEclipsePhotonMapper::createShadowMap() {
-        std::vector<Photon> photons = generatePhotons(1000'000);
+    uint32_t TextureTracer::createShadowMap(size_t numPhotons) {
+        std::vector<Photon> photons = generatePhotons(numPhotons);
 
         uint32_t ssboPhotons;
         glGenBuffers(1, &ssboPhotons);

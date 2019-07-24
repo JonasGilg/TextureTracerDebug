@@ -1,25 +1,17 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
-#include "AtmosphereEclipsePhotonMapper.hpp"
-
-#include <sys/resource.h>
-#include <iostream>
+#include "TextureTracer.hpp"
 
 int main(int argc, char *argv[]) {
-    const rlim_t stackSize = 4ul * 1024ul * 1024ul * 1024ul;
-    rlimit rl{};
-    getrlimit(RLIMIT_STACK, &rl);
-    rl.rlim_cur = stackSize;
-    setrlimit(RLIMIT_STACK, &rl);
-
     glutInit(&argc, argv);
     glutCreateWindow("Hurr durr OpenGL needs a window o.O");
     glewInit();
 
-    auto mapper = gpu::AtmosphereEclipsePhotonMapper();
+    auto mapper = gpu::TextureTracer();
 
-    mapper.createShadowMap();
+    // WITH 100'000 PHOTONS IT WORKS, WITH 1'000'000 PHOTONS NOT WHY?
+    mapper.createShadowMap(100'000);
 
     return 0;
 }

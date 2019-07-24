@@ -87,7 +87,7 @@ int binarySearchForHorizontalRectangle(float x) {
     } else return middle;
   }
 
-  return int(TEX_WIDTH);// outside of grid (should never happen in any reasonable scenario...)
+  return int(TEX_WIDTH); // outside of grid (should never happen in any reasonable scenario...)
 }
 
 uniform float shadowLength;
@@ -109,12 +109,14 @@ float getRayIntersectAtX(Photon ray, float x) {
 
 ivec2 getRayRectangleExitEdge(Photon ray, Rectangle rect) {
   float intersectHeight = getRayIntersectAtX(ray, rect.x + rect.w);
+
+  // IF ONE OF THE FIRST TWO CONDITIONS GETS REMOVED IT WORKS WITH 1'000'000 PHOTONS OTHERWISE ONLY 100'000 WHY?
   if (intersectHeight < rect.y) {
-    return ivec2(0u, -1u);
+    return ivec2(0, -1);
   } else if (intersectHeight > rect.y + rect.h) {
-    return ivec2(0u, 1u);
+    return ivec2(0, 1);
   } else {
-    return ivec2(1u, 0u);
+    return ivec2(1, 0);
   }
 }
 
@@ -128,13 +130,14 @@ void main() {
   while (photonTexIndices.x < TEX_WIDTH && photonTexIndices.y < TEX_HEIGHT &&
   photonTexIndices.x >= 0        && photonTexIndices.y >= 0) {
     // need to convert to uint for atomic add operations...
-    addToPixel(uvec2(photonTexIndices), photon.wavelength, 1u);//uint(photon.intensity * 100.0));
+    addToPixel(uvec2(photonTexIndices), photon.wavelength, uint(photon.intensity * 100.0));
 
     ivec2 dir = getRayRectangleExitEdge(photon, getRectangleAt(photonTexIndices));
     photonTexIndices += dir;
 
     // When the ray goes out of bounds on the bottom then mirror it to simulate rays coming from
     // the other side of the planet. This works because of the rotational symmetry of the system.
+    // IF COMMENTET OUT IT WORKS WITH 1'000'000 PHOTONS OTHERWISE ONLY 100'000 WHY?
     if (photonTexIndices.y < 0) {
       photonTexIndices.y = 0;
       photon.position.y *= -1.0;

@@ -1,19 +1,12 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//                               This file is part of CosmoScout VR //
-//      and may be used under the terms of the MIT license. See the LICENSE file
-//      for details.     //
-//                        Copyright: (c) 2019 German Aerospace Center (DLR) //
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#ifndef CSP_SIMPLE_PLANETS_ATMOSPHERE_ECLIPSE_PHOTON_MAPPER_HPP
-#define CSP_SIMPLE_PLANETS_ATMOSPHERE_ECLIPSE_PHOTON_MAPPER_HPP
+#ifndef TEXTURE_TRACER_HPP
+#define TEXTURE_TRACER_HPP
 
 #include <glm/glm.hpp>
 #include <random>
 
 namespace gpu {
 
-// 6 * 4 = 24 Bytes
+    // 6 * 4 = 24 Bytes
     struct Photon {
         glm::vec2 position;  // m
         glm::vec2 direction; // normalized
@@ -21,19 +14,15 @@ namespace gpu {
         float intensity;     // 0..1 should start at 1
     };
 
-    class AtmosphereEclipsePhotonMapper {
+    class TextureTracer {
     public:
-        AtmosphereEclipsePhotonMapper();
-
-        uint32_t createShadowMap();
+        TextureTracer();
+        uint32_t createShadowMap(size_t numPhotons);
 
     private:
         void initTextureTracer();
-
         void traceThroughTexture(uint32_t ssboPhotons, size_t numPhotons);
-
         Photon emitPhoton();
-
         std::vector<Photon> generatePhotons(uint32_t count);
 
         struct {
@@ -52,4 +41,4 @@ namespace gpu {
 
 } // namespace gpu
 
-#endif // CSP_SIMPLE_PLANETS_ATMOSPHERE_ECLIPSE_PHOTON_MAPPER_HPP
+#endif // TEXTURE_TRACER_HPP
