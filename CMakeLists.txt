@@ -39,5 +39,3 @@ target_link_libraries(ComputeShaderDebug
         ${GLEW_LIBRARIES}
         ${GLUT_LIBRARIES}
         )
-
-file(COPY "resources" DESTINATION ".")

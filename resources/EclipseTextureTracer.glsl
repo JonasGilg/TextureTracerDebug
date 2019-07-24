@@ -31,7 +31,6 @@ struct Photon {
   float intensity;// 0..1 should start at 1
 };
 
-// maybe generate in GPU with rng?
 layout(std430, binding = 0) buffer Photons {
   Photon photons[];
 };
@@ -42,7 +41,8 @@ struct Pixel {
 };
 
 layout(std430, binding = 1) buffer Pixels {
-//Pixel pixels[TEX_WIDTH][TEX_HEIGHT];
+  //Pixel pixels[TEX_WIDTH][TEX_HEIGHT];
+  // NVIDIAs linker takes ages to link if the sizes are specified :(
   Pixel[] pixels;
 };
 
@@ -68,9 +68,6 @@ struct Rectangle {
   float w;
   float h;
 };
-
-uniform uint pass;
-uniform uint passSize;
 
 layout (local_size_variable) in;
 
@@ -133,20 +130,11 @@ ivec2 getRayRectangleExitEdge(Photon ray, Rectangle rect) {
   }
 }
 
-void mirrorRayAroundUniversalXAxis(inout Photon ray) {
-  ray.position.y = -ray.position.y;
-  ray.direction.y = -ray.direction.y;
-}
-
 void main() {
   uint gid = gl_GlobalInvocationID.x;
-  uint myId = pass * passSize + gid;
-  if (myId >= photons.length()) return;
+  if(gid >= photons.length()) return;
 
-  Photon photon = photons[myId];
-
-  // Poor photon didn't make it through the atmosphere :(
-  if (photon.intensity < 0.0) return;
+  Photon photon = photons[gid];
 
   ivec2 photonTexIndices = getRectangleIdxAt(photon.position);
   while (photonTexIndices.x < TEX_WIDTH && photonTexIndices.y < TEX_HEIGHT &&
@@ -161,7 +149,8 @@ void main() {
     // the other side of the planet. This works because of the rotational symmetry of the system.
     if (photonTexIndices.y < 0) {
       photonTexIndices.y = 0;
-      mirrorRayAroundUniversalXAxis(photon);
+      photon.position.y *= -1.0;
+      photon.direction.y *= -1.0;
     }
   }
 }
