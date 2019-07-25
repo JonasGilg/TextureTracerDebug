@@ -71,11 +71,9 @@ uniform float shadowHeight;
 
 /// Returns the indices of the rectangle at the given location
 ivec2 getRectangleIdxAt(vec2 location) {
-    if (location.x >= 0 && location.x < shadowLength && location.y >= 0 && location.y < shadowHeight) {
-        int x = 0;
-        int y = int(location.y / rectangleHeight);
-        return ivec2(x, y);
-    } else return ivec2(TEX_WIDTH, TEX_HEIGHT);
+    int x = 0;
+    int y = int(location.y / rectangleHeight);
+    return ivec2(x, y);
 }
 
 float getRayIntersectAtX(Photon ray, float x) {
