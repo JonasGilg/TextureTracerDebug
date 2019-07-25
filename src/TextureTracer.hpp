@@ -29,6 +29,7 @@ namespace gpu {
             uint32_t uRectangleHeight;
             uint32_t uShadowLength;
             uint32_t uShadowHeight;
+            uint32_t uXAxisScalingFactor;
         } mTextureTracerUniforms;
 
         uint32_t mTextureTracerProgram;

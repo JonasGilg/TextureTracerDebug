@@ -34,18 +34,12 @@ layout(std430, binding = 1) buffer Pixels {
     Pixel[] pixels;
 };
 
-// x = x1, y = w1, z = x2, w = w2
-layout(std140, binding = 2) uniform HorizontalRectangles {
-    vec4 horizontalRectangles[TEX_WIDTH / 2u];
-};
+uniform float xAxisScalingFactor;
 
 vec2 getHorizontalRectangleAt(int i) {
-    vec4 entry = horizontalRectangles[i / 2];
-    if (i % 2 == 0) {
-        return entry.xy;
-    } else {
-        return entry.zw;
-    }
+    float x = pow(float(i), xAxisScalingFactor);
+    float w = pow(float(i + 1), xAxisScalingFactor);
+    return vec2(x, w);
 }
 
 uniform float rectangleHeight;
