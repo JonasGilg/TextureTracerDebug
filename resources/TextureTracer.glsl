@@ -66,31 +66,13 @@ Rectangle getRectangleAt(ivec2 indices) {
     return Rectangle(horRect.x, rectangleHeight * float(indices.y), horRect.y, rectangleHeight);
 }
 
-/// Searches for the horizontal index in the rectangle array which contains x.
-int binarySearchForHorizontalRectangle(float x) {
-    int left = 0;
-    int right = int(TEX_WIDTH) - 1;
-
-    while (left <= right) {
-        int middle = (left + right) / 2;
-        vec2 rectM = getHorizontalRectangleAt(middle);
-        if (rectM.x  + rectM.y < x) {
-            left = middle + 1;
-        } else if (rectM.x > x) {
-            right = middle - 1;
-        } else return middle;
-    }
-
-    return int(TEX_WIDTH);// outside of grid (should never happen in any reasonable scenario...)
-}
-
 uniform float shadowLength;
 uniform float shadowHeight;
 
 /// Returns the indices of the rectangle at the given location
 ivec2 getRectangleIdxAt(vec2 location) {
     if (location.x >= 0 && location.x < shadowLength && location.y >= 0 && location.y < shadowHeight) {
-        int x = binarySearchForHorizontalRectangle(location.x);
+        int x = 0;
         int y = int(location.y / rectangleHeight);
         return ivec2(x, y);
     } else return ivec2(TEX_WIDTH, TEX_HEIGHT);
