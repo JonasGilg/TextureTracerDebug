@@ -37,9 +37,9 @@ layout(std430, binding = 1) buffer Pixels {
 uniform float xAxisScalingFactor;
 
 vec2 getHorizontalRectangleAt(int i) {
-    float x = pow(float(i), xAxisScalingFactor);
-    float w = pow(float(i + 1), xAxisScalingFactor);
-    return vec2(x, w);
+    float x0 = pow(float(i), xAxisScalingFactor);
+    float x1 = pow(float(i + 1), xAxisScalingFactor);
+    return vec2(x0, x1 - x0);
 }
 
 uniform float rectangleHeight;

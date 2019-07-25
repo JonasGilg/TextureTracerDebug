@@ -171,6 +171,8 @@ void TextureTracer::traceThroughTexture(uint32_t ssboPhotons,
   const uint32_t numBlocks = numPhotons / numThreads;
   std::cout << "numBlocks: " << numBlocks << std::endl;
 
+  auto start = clock();
+
   glDispatchComputeGroupSizeARB(numBlocks, 1, 1, numThreads, 1, 1);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -184,6 +186,8 @@ void TextureTracer::traceThroughTexture(uint32_t ssboPhotons,
   glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, pixelBufferSize,
                      pixels.data());
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+  auto end = clock();
 
   for (int y = 0; y < TEX_HEIGHT; ++y) {
     printf("%4i | ", y);
@@ -211,6 +215,8 @@ void TextureTracer::traceThroughTexture(uint32_t ssboPhotons,
 
     std::cout << std::endl;
   }
+
+  std::cout << static_cast<double>(end - start) / CLOCKS_PER_SEC << std::endl;
 
   glDeleteBuffers(1, &ssboPixels);
 

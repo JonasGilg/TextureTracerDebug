@@ -1,5 +1,5 @@
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 #include "TextureTracer.hpp"
 
@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     auto mapper = gpu::TextureTracer();
 
     // WITH 100'000 PHOTONS IT WORKS, WITH 1'000'000 PHOTONS NOT WHY?
-    mapper.createShadowMap(1000'000);
+    mapper.createShadowMap(100'000);
 
     return 0;
 }
