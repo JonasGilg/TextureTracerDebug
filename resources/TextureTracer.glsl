@@ -94,11 +94,16 @@ ivec2 getRayRectangleExitEdge(Photon ray, Rectangle rect) {
     }
 }
 
+uniform uint pass;
+uniform uint passSize;
+
 void main() {
     uint gid = gl_GlobalInvocationID.x;
-    if (gid >= photons.length()) return;
+    uint passId = pass * passSize + gid;
+    if (passId >= photons.length()) return;
 
-    Photon photon = photons[gid];
+    Photon photon = photons[passId];
+
 
     ivec2 photonTexIndices = getRectangleIdxAt(photon.position);
     while (photonTexIndices.x < TEX_WIDTH && photonTexIndices.y < TEX_HEIGHT &&

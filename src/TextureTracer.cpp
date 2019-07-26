@@ -1,6 +1,7 @@
 #include "TextureTracer.hpp"
 #include <GL/glew.h>
 #include <algorithm>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -167,14 +168,36 @@ void TextureTracer::traceThroughTexture(uint32_t ssboPhotons,
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboPhotons);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboPixels);
 
-  const uint32_t numThreads = 32u;
-  const uint32_t numBlocks = numPhotons / numThreads;
+
+  // TODO make configurable
+  const uint32_t passSize   = 2048u;
+  const uint32_t numPasses = (numPhotons / passSize) + 1;
+  const uint32_t numThreads = 64u;
+  const uint32_t numBlocks  = passSize / numThreads;
   std::cout << "numBlocks: " << numBlocks << std::endl;
+  std::cout << "passes: " << numPasses << std::endl;
 
-  auto start = clock();
+  std::cout << "Starting to trace photons..." << std::endl;
+  std::clock_t begin = std::clock();
 
-  glDispatchComputeGroupSizeARB(numBlocks, 1, 1, numThreads, 1, 1);
-  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  // Because OpenGL decides it doesn't like to compute all at once, we have to split them up
+  // (╯°□°）╯︵ ┻━┻
+  glUniform1ui(glGetUniformLocation(mTextureTracerProgram, "passSize"), passSize);
+  for (uint32_t pass = 0u; pass < numPasses; ++pass) {
+    glUniform1ui(glGetUniformLocation(mTextureTracerProgram, "pass"), pass);
+
+    glDispatchComputeGroupSizeARB(numBlocks, 1, 1, numThreads, 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glFlush();
+    glFinish();
+  }
+
+  std::clock_t end         = std::clock();
+  double       elapsedTime = double(end - begin) / CLOCKS_PER_SEC;
+  std::cout << "Finished tracing photons." << std::endl;
+  std::cout << "It took: " << elapsedTime << " seconds.\n" << std::endl;
+
+  std::clock_t beginDownload = std::clock();
 
   struct Pixel {
     uint32_t intensityAtWavelengths[NUM_WAVELENGTHS];
@@ -186,8 +209,6 @@ void TextureTracer::traceThroughTexture(uint32_t ssboPhotons,
   glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, pixelBufferSize,
                      pixels.data());
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-  auto end = clock();
 
   for (int y = 0; y < TEX_HEIGHT; ++y) {
     printf("%4i | ", y);
@@ -215,8 +236,6 @@ void TextureTracer::traceThroughTexture(uint32_t ssboPhotons,
 
     std::cout << std::endl;
   }
-
-  std::cout << static_cast<double>(end - start) / CLOCKS_PER_SEC << std::endl;
 
   glDeleteBuffers(1, &ssboPixels);
 
